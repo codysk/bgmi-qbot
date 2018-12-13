@@ -1,12 +1,19 @@
 #!/usr/bin/python
 # coding=utf-8
 
-import os
-from qbot import bot
+import os, json
+from aiocqhttp import CQHttp
 
 
-def init_msg_handler():
-    @bot.on_message()
-    async def handle_msg(context):
-        print(context)
-        return {'reply': "reply" + context['message']}
+class msg_handler(CQHttp):
+    def __init__(self, **config_object):
+        super(msg_handler, self).__init__(**config_object)
+
+        @self.on_message()
+        async def handle_msg(context):
+            if context['sender']['user_id'] != os.environ.get('admin_qq', '10000'):
+                return
+
+            self.logger.debug(context)
+            return {'reply': "echo " + json.dumps(context)}
+        pass

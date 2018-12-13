@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # coding=utf-8
 
-import os
-from aiocqhttp import CQHttp
+import os, logging
+from msg_handler import msg_handler
 
 api_root = os.environ.get('api_root', 'http://127.0.0.1:5700/')
 access_token = os.environ.get('access_token', False)
@@ -17,7 +17,8 @@ if secret:
     param_dict['secret'] = secret
 param_dict['enable_http_post'] = enable_http_post
 
-bot = CQHttp(**param_dict)
+bot = msg_handler(**param_dict)
+bot.logger.setLevel(level=logging.DEBUG)
 
 
 if __name__ == '__main__':
