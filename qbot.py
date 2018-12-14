@@ -18,7 +18,7 @@ if secret:
 param_dict['enable_http_post'] = enable_http_post
 
 bot = msg_handler(**param_dict)
-bot.logger.setLevel(level=logging.DEBUG)
+bot.logger.setLevel(level=getattr(logging, os.environ.get('log_level', 'ERROR')))
 
 
 if __name__ == '__main__':

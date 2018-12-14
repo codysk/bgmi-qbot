@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 
-import os
+import os, types
 from aiocqhttp import CQHttp
 
 from utils import discuss_set, group_set
@@ -26,12 +26,14 @@ class msg_handler(CQHttp):
             method_name = cmd[0]
             params = cmd[1:]
 
-            if not callable(getattr(self, method_name)):
+            # CQHTTP warped undefined method as functools.partial
+            # so check method exist need check it type as method
+            self.logger.debug("calling %s" % (method_name))
+            method = getattr(self, method_name)
+            self.logger.debug(type(method))
+            if not callable(getattr(self, method_name)) or not isinstance(method, types.MethodType):
                 return {'reply': "command %s not exist" % (method_name)}
 
-            self.logger.debug("calling %s" % (method_name))
-            method =  getattr(self, method_name)
-            self.logger.debug(type(method))
             await method(context, params)
         pass
 
@@ -47,3 +49,33 @@ class msg_handler(CQHttp):
             group_set.add(str(context['group_id']))
             await self.send(context=context,
                             message='group %s add to subscript list' % (str(context['group_id'])))
+        pass
+
+    async def getlist(self, context, params):
+        await self.send(context=context,
+                        message='discuss subscript list: %s' % (','.join(discuss_set)))
+        await self.send(context=context,
+                        message='group subscript list: %s' % (','.join(group_set)))
+        pass
+
+    async def remove(self, context, params):
+        if len(params) < 2:
+            await self.send(context=context,
+                            message='Usage: /remove <discuss/group> <id> [<id> <id> ...]')
+            return
+        list_name = params[0]
+        id_list = params[1:]
+        if list_name == 'discuss':
+            for _id in id_list:
+                discuss_set.remove(_id)
+                pass
+            await self.send(context=context,
+                            message='deleted discuss %s' % (','.join(id_list)))
+            pass
+        if list_name == 'group':
+            for _id in id_list:
+                group_set.remove(_id)
+                pass
+            await self.send(context=context,
+                            message='deleted group %s' % (','.join(id_list)))
+            pass

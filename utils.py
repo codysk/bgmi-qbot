@@ -16,7 +16,7 @@ class savable_set(set):
     def save(self):
         try:
             with open(file=self.file_path, mode='w') as fp:
-                json.dump(self, fp)
+                json.dump(list(self), fp)
         except EnvironmentError:
             pass
         pass
@@ -36,6 +36,8 @@ class savable_set(set):
             with open(file=self.file_path) as fp:
                 load_set = json.load(fp)
         except EnvironmentError:
+            load_set = []
+        except json.JSONDecodeError:
             load_set = []
             pass
 
