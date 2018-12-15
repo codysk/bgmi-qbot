@@ -1,5 +1,5 @@
 # BGmi-qbot
-----------------
+
 基于[python-aiocqhttp](https://github.com/richardchien/python-aiocqhttp) 的BGmi QQ机器人
 目前实现的功能
 + BGmi 站点的番组出现更新时的QQ通知
@@ -7,7 +7,7 @@
 + 其他的还没想好做啥。。(
 
 ## 环境要求
-----------------
+
 由于使用了二进制分发的coolq所以对CPU架构有要求
 其他的需要的依赖基本上都可以在docker里完成
 + Docker环境
@@ -15,7 +15,7 @@
 + docker-composer (建议，用于编排容器)
 
 ## 部署安装
-----------------
+
 建议使用docker-composer进行容器编排
 
 一个docker-compose.yml的例子
@@ -72,7 +72,7 @@ docker-compose up -d
 启动完成后访问http://<部署服务器ip>:9000访问coolq的noVNC服务完成QQ登录
 
 ## 使用方式
-----------------
+
 用管理员账号私聊机器人 或在将机器人加入讨论组/群 均可使用管理指令
 ### 管理员指令
 + `/set` 将当前 讨论组/群 加入到番组更新的通知列表中
