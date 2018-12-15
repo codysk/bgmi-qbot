@@ -48,6 +48,7 @@ services:
 ```
 
 有几个环境变量需要在docker-compose配置文件中指定
+
 | 变量名 | 含义 | 必须 | 默认值 |
 | ------ | ------ | ------ | ------ |
 | api_root | CoolQHttpApi的url |  | False |
