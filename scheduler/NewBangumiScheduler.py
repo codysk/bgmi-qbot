@@ -11,7 +11,7 @@ prev_bangumi_key_list = []
 
 async def check_update():
 
-    bot.logger.debug('checking update...')
+    bot.logger.info('checking update...')
 
     is_first = (len(prev_bangumi_key_list) == 0)
     # is_first = False    # For debug
@@ -39,7 +39,7 @@ async def check_update():
 
         pass
 
-    bot.logger.debug(updated_list)
+    bot.logger.info(updated_list)
     # update prev list
     prev_bangumi_key_list.clear()
     prev_bangumi_key_list.extend(new_bangumi_key_list)
