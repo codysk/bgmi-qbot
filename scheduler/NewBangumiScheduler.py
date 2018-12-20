@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 
-import os, json
+import os, json, asyncio, aiohttp
 from aiohttp import ClientSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from utils import discuss_set, group_set
@@ -9,15 +9,32 @@ from qbot import bot
 
 prev_bangumi_key_list = []
 
-async def check_update():
 
-    bot.logger.info('checking update...')
+async def check_update():
 
     is_first = (len(prev_bangumi_key_list) == 0)
     # is_first = False    # For debug
     api_url = os.environ.get('bgmi_api', 'http://127.0.0.1/api/index')
-    async with ClientSession() as client:
-        content = await fetch(client, api_url)
+
+    bot.logger.info('checking update...')
+
+    try:
+        async with ClientSession() as client:
+            content = await fetch(client, api_url)
+    except asyncio.TimeoutError as _:
+        bot.logger.warn('fetch timeout!')
+        await bot.send_private_msg(user_id=os.environ.get('admin_qq', '10000'), message='bgmi api fetch timeout!')
+        return
+    except (
+        aiohttp.client_exceptions.ClientConnectionError,
+        ConnectionError,
+        ConnectionAbortedError,
+        ConnectionRefusedError,
+        ConnectionResetError
+    ) as _:
+        bot.logger.warn('connect failed!')
+        await bot.send_private_msg(user_id=os.environ.get('admin_qq', '10000'), message='bgmi api connect failed!')
+        return
 
     updated_list = []
     new_bangumi_key_list = []
@@ -69,5 +86,9 @@ async def fetch(client: ClientSession, url):
 
 
 schedulers = AsyncIOScheduler()
+
+# run for init
+loop = asyncio.get_event_loop()
+loop.run_until_complete(check_update())
 
 schedulers.add_job(check_update, 'cron', second='0', minute='*/30')
