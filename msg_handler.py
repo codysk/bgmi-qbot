@@ -1,14 +1,17 @@
 #!/usr/bin/python
 # coding=utf-8
 
-import os, types
+import os
+import types
 from aiocqhttp import CQHttp
 
 from utils import discuss_set, group_set
 
+
 class msg_handler(CQHttp):
     def __init__(self, **config_object):
         super(msg_handler, self).__init__(**config_object)
+        self.admin_command_handler = admin_command_handler(self)
 
         @self.on_message()
         async def handle_msg(context):
@@ -29,13 +32,24 @@ class msg_handler(CQHttp):
             # CQHTTP warped undefined method as functools.partial
             # so check method exist need check it type as method
             self.logger.debug("calling %s" % (method_name))
-            method = getattr(self, method_name)
+            method = self.get_command_method(method_name)
             self.logger.debug(type(method))
-            if not callable(getattr(self, method_name)) or not isinstance(method, types.MethodType):
+            if not callable(method) or not isinstance(method, types.MethodType):
                 return {'reply': "command %s not exist" % (method_name)}
 
             await method(context, params)
         pass
+
+    def get_command_method(self, item, is_admin=False):
+        method = None
+        if is_admin and not callable(method):
+            method = getattr(self.admin_command_handler, item)
+        return method
+
+
+class admin_command_handler:
+    def __init__(self, cqhttp):
+        self.cqhttp = cqhttp
 
     async def set(self, context, params):
         message_type = str(context['message_type'])
@@ -79,3 +93,6 @@ class msg_handler(CQHttp):
             await self.send(context=context,
                             message='deleted group %s' % (','.join(id_list)))
             pass
+
+    def __getattr__(self, name):
+        return getattr(self.cqhttp, name)
