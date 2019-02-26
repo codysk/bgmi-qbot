@@ -78,11 +78,11 @@ async def check_update():
 
     pass
 
+
 async def fetch(client: ClientSession, url):
     async with client.get(url=url) as resp:
         assert resp.status == 200
         return await resp.text()
-
 
 
 schedulers = AsyncIOScheduler()
