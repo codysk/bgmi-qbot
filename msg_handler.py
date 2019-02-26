@@ -3,6 +3,10 @@
 
 import os
 import types
+import asyncio
+import aiohttp
+import json
+from aiohttp import ClientSession
 from aiocqhttp import CQHttp
 
 from utils import discuss_set, group_set
@@ -16,10 +20,6 @@ class msg_handler(CQHttp):
         @self.on_message()
         async def handle_msg(context):
             self.logger.debug(context)
-            admin = os.environ.get('admin_qq', '10000')
-            if str(context['sender']['user_id']) != str(admin):
-                self.logger.debug("user: %s not admin(%s)" % (context['sender']['user_id'], admin))
-                return
             message = str(context['message'])
             if not message.startswith('/'):
                 return
@@ -32,12 +32,13 @@ class msg_handler(CQHttp):
             # CQHTTP warped undefined method as functools.partial
             # so check method exist need check it type as method
             self.logger.debug("calling %s" % (method_name))
-            method = self.get_command_method(method_name)
+            method = self.get_command_method(method_name, is_admin=self.is_admin(context=context))
             self.logger.debug(type(method))
             if not callable(method) or not isinstance(method, types.MethodType):
                 return {'reply': "command %s not exist" % (method_name)}
 
             await method(context, params)
+
         pass
 
     def get_command_method(self, item, is_admin=False):
@@ -45,6 +46,14 @@ class msg_handler(CQHttp):
         if is_admin and not callable(method):
             method = getattr(self.admin_command_handler, item)
         return method
+
+    def is_admin(self, context):
+        admin = os.environ.get('admin_qq', '10000')
+        if str(context['sender']['user_id']) != str(admin):
+            self.logger.debug("user: %s not admin(%s)" % (context['sender']['user_id'], admin))
+            return False
+        self.logger.debug("user: %s is admin(%s) √" % (context['sender']['user_id'], admin))
+        return True
 
 
 class admin_command_handler:
@@ -96,3 +105,53 @@ class admin_command_handler:
 
     def __getattr__(self, name):
         return getattr(self.cqhttp, name)
+
+
+class public_command_handler:
+    def __init__(self, cqhttp):
+        self.cqhttp = cqhttp
+
+    async def ping(self, context, params):
+        await self.send(context=context,
+                        message='pong')
+
+    async def status(self, context, params):
+        api_url = os.environ.get('bgmi_api', 'http://127.0.0.1/api/index')
+        self.logger.debug('checking status...')
+
+        try:
+            async with ClientSession() as client:
+                content = await fetch(client, api_url)
+        except asyncio.TimeoutError as _:
+            await self.send(context=context, message='bgmi api fetch timeout!')
+            return
+        except (
+                aiohttp.client_exceptions.ClientConnectionError,
+                ConnectionError,
+                ConnectionAbortedError,
+                ConnectionRefusedError,
+                ConnectionResetError
+        ) as _:
+            await self.send(context=context, message='bgmi api connect failed!')
+            return
+
+        json.load(content)
+        api_data = json.loads(content)
+
+        current_bangumi_episode = ["%s[%s]" % (bangumi['bangumi_name'], bangumi['episode']) for bangumi in
+                                   api_data['data']]
+
+        message = "当前订阅的番剧有:\n" \
+                  "%s" % ('\n'.join(current_bangumi_episode))
+
+        await self.send(context=context,
+                        message=message)
+
+    def __getattr__(self, name):
+        return getattr(self.cqhttp, name)
+
+
+async def fetch(client: ClientSession, url):
+    async with client.get(url=url) as resp:
+        assert resp.status == 200
+        return await resp.text()
