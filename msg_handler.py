@@ -16,6 +16,7 @@ class msg_handler(CQHttp):
     def __init__(self, **config_object):
         super(msg_handler, self).__init__(**config_object)
         self.admin_command_handler = admin_command_handler(self)
+        self.public_command_handler = public_command_handler(self)
 
         @self.on_message()
         async def handle_msg(context):
@@ -42,9 +43,11 @@ class msg_handler(CQHttp):
         pass
 
     def get_command_method(self, item, is_admin=False):
-        method = None
-        if is_admin and not callable(method):
+        method = getattr(self.public_command_handler, item)
+        self.logger.debug("method: %s from public_command_handler type is %s" % (item, type(method)))
+        if is_admin and not isinstance(method, types.MethodType):
             method = getattr(self.admin_command_handler, item)
+            self.logger.debug("method: %s from admin_command_handler type is %s" % (item, type(method)))
         return method
 
     def is_admin(self, context):
@@ -135,7 +138,7 @@ class public_command_handler:
             await self.send(context=context, message='bgmi api connect failed!')
             return
 
-        json.load(content)
+        json.loads(content)
         api_data = json.loads(content)
 
         current_bangumi_episode = ["%s[%s]" % (bangumi['bangumi_name'], bangumi['episode']) for bangumi in
