@@ -56,6 +56,7 @@ services:
 | access_token | CoolQ Access_Token |  | False |
 | secret | CoolQ secret |  | False |
 | admin_qq | 管理员的Q号 | * | None |
+| enable_public_command | 公共指令的开放等级(Always总是开放/Subscriber对订阅的群与讨论组开放/Never永不) | | Always |
 | log_level | 日志等级(ERROR/WARNING/INFO/DEBUG) |  | ERROR |
 | bgmi_api | BGmi首页api的url |  | http://127.0.0.1/api/index |
 | VNC_PASSWD | CoolQ容器的noVNC服务密码 | * | 见richardchien/cqhttp项目 |
