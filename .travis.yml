@@ -1,0 +1,15 @@
+language: python
+python:
+  - 3.5
+  - 3.6
+  - 3.7
+  - 3.8-dev
+before_script:
+  - pip install codecov
+  - pip install coverage
+
+script:
+  - coverage run -a -m unittest
+
+after_success:
+  - codecov

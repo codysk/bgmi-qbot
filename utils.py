@@ -12,7 +12,6 @@ class savable_set(set):
         super(savable_set, self).__init__()
         self.load()
 
-
     def save(self):
         try:
             with open(file=self.file_path, mode='w') as fp:
@@ -46,5 +45,7 @@ class savable_set(set):
             self.add(item)
         pass
     pass
+
+
 discuss_set = savable_set(os.environ.get('DATA_PATH', './data') + '/discuss_set.json')
-group_set = savable_set(os.environ.get('DATA_PATH', './data') + 'group_set.json')
+group_set = savable_set(os.environ.get('DATA_PATH', './data') + '/group_set.json')

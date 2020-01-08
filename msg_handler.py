@@ -30,7 +30,6 @@ class msg_handler(CQHttp):
             method_name = cmd[0]
             params = cmd[1:]
 
-
             is_admin = self.is_admin(context=context)
 
             if not self.should_reply_command(is_admin=is_admin, context=context):
