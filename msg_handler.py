@@ -30,10 +30,15 @@ class msg_handler(CQHttp):
             method_name = cmd[0]
             params = cmd[1:]
 
+            is_admin = self.is_admin(context=context)
+
+            if not self.should_reply_command(is_admin=is_admin, context=context):
+                return
+
             # CQHTTP warped undefined method as functools.partial
             # so check method exist need check it type as method
             self.logger.debug("calling %s" % (method_name))
-            method = self.get_command_method(method_name, is_admin=self.is_admin(context=context))
+            method = self.get_command_method(method_name, is_admin=is_admin)
             self.logger.debug(type(method))
             if not callable(method) or not isinstance(method, types.MethodType):
                 return {'reply': "command %s not exist" % (method_name)}
@@ -41,6 +46,29 @@ class msg_handler(CQHttp):
             await method(context, params)
 
         pass
+
+    def should_reply_command(self, is_admin, context):
+        if is_admin:
+            return True
+
+        enable_public_command = os.environ.get('enable_public_command', 'Always')
+        if enable_public_command == 'Always':
+            return True
+        if not is_admin and enable_public_command == 'Never':
+            return False
+
+        if not is_admin and enable_public_command == 'Subscriber':
+            message_type = str(context['message_type'])
+            if (message_type == 'discuss') and (str(context['discuss_id']) in discuss_set):
+                return True
+            if (message_type == 'group') and (str(context['group_id']) in group_set):
+                return True
+            if message_type == 'private':
+                return True
+            return False
+
+        self.logger.debug("should_reply_command trapped in unexpected condition")
+        return False
 
     def get_command_method(self, item, is_admin=False):
         method = getattr(self.public_command_handler, item)
