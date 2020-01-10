@@ -30,7 +30,6 @@ class msg_handler(CQHttp):
             method_name = cmd[0]
             params = cmd[1:]
 
-
             is_admin = self.is_admin(context=context)
 
             if not self.should_reply_command(is_admin=is_admin, context=context):
@@ -60,9 +59,9 @@ class msg_handler(CQHttp):
 
         if not is_admin and enable_public_command == 'Subscriber':
             message_type = str(context['message_type'])
-            if message_type == 'discuss' and str(context['discuss_id']) in discuss_set:
+            if (message_type == 'discuss') and (str(context['discuss_id']) in discuss_set):
                 return True
-            if message_type == 'group_id' and str(context['group_id']) in group_set:
+            if (message_type == 'group') and (str(context['group_id']) in group_set):
                 return True
             if message_type == 'private':
                 return True
