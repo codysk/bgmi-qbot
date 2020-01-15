@@ -59,9 +59,9 @@ class msg_handler(CQHttp):
 
         if not is_admin and enable_public_command == 'Subscriber':
             message_type = str(context['message_type'])
-            if message_type == 'discuss' and str(context['discuss_id']) in discuss_set:
+            if (message_type == 'discuss') and (str(context['discuss_id']) in discuss_set):
                 return True
-            if message_type == 'group_id' and str(context['group_id']) in group_set:
+            if (message_type == 'group') and (str(context['group_id']) in group_set):
                 return True
             if message_type == 'private':
                 return True
