@@ -7,6 +7,10 @@ import os
 class TestSavableSet(unittest.TestCase):
 
     def test_all(self):
+        group_set.clear()
+        discuss_set.clear()
+        group_set.save()
+        discuss_set.save()
         i = 10
         while i > 0:
             i -= 1
