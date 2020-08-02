@@ -1,5 +1,7 @@
 # BGmi-qbot
 
+> 由于底层框架 coolq 即将停止服务，本项目将不再维护
+
 基于[python-aiocqhttp](https://github.com/richardchien/python-aiocqhttp) 的BGmi QQ机器人
 目前实现的功能
 + BGmi 站点的番组出现更新时的QQ通知
